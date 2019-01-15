@@ -13,33 +13,44 @@ use yaml_rust::YamlLoader;
 
 mod subcommands;
 
-/// Reads CLI and loads config file before passing into subcommand
+/// Reads CLI args and loads config file and passes them into the respective
+/// subcommand handler.
 fn main() -> Result<(), Box<Error>> {
     let yaml = load_yaml!("cli.yaml");
-    let matches = App::from_yaml(yaml)
-        .version(crate_version!())
-        .author(crate_authors!())
-        .get_matches();
+    let mut app = App::from_yaml(&yaml).version(crate_version!()).author(crate_authors!());
+    let matches = app.clone().get_matches();
 
     let config_dir = parse_config_dir(&matches);
     let configs = load_or_init_config(&config_dir)?;
-    println!("{:?}", configs["version"].as_str().unwrap());
-    println!("{:?}", matches);
-    match matches.subcommand_name() {
-        add => subcommands::add::handler(configs, matches),
-        remove => println!("kek!"),
-        stow => println!("stow"),
-        ignore => println!("ignored"),
+
+    // println!("{:?}", configs["version"].as_str().unwrap());
+    // println!("{:?}", matches);
+
+    match matches.subcommand_name().unwrap_or_default() {
+        "add" => subcommands::add::handler(configs, matches),
+        "remove" => subcommands::remove::handler(configs, matches),
+        "stow" => subcommands::stow::handler(configs, matches),
+        "ignore" => subcommands::ignore::handler(configs, matches),
+        _ => app.print_help()?,
     };
+
     Ok(())
 }
 
-/// Parses the input args and attempts to locate the config directory
+/// Parses the input args and attempts to locate the config directory.
+///
+/// Returns the expanded location path.
+///
+/// # Arguments
+///
+/// * `matches` - The matches object obtained from the clap library.
+///
 fn parse_config_dir(matches: &clap::ArgMatches) -> String {
     // Should never panic because Location has a default value.
     let config_dir = matches
         .value_of("location")
         .expect("Location not provided!");
+
     // Since the default args uses ~, which is a shell-dependent feature, we
     // need to substitute ~ into the home directory. The dirs package is a
     // platform-independent solution.
@@ -48,10 +59,15 @@ fn parse_config_dir(matches: &clap::ArgMatches) -> String {
         dirs::home_dir()
             .expect("Could not find home dir!")
             .to_str()
-            .expect("Failed to stringify home dir"),
+            .expect("Failed to stringify home dir!"),
     )
 }
 
+/// Generates and/or loads the config file at the provided path location.
+///
+/// # Arguments
+///
+/// * `path` - the path of the dotfile directory. Can be relative or absolute.
 fn load_or_init_config(path: &str) -> Result<yaml_rust::Yaml, Box<Error>> {
     let path = path.to_owned();
     let config_path = path.clone() + "/dotfile.yaml";
