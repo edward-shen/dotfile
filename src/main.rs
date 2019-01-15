@@ -24,11 +24,11 @@ fn main() -> Result<(), Box<Error>> {
                                 dirs::home_dir().expect("Could not find home dir!")
                                                 .to_str().expect("Failed to stringify home dir"));
     let configs = load_or_init_config(&config_dir)?;
-    println!("{:?}", configs);
+    println!("{:?}", configs["version"].as_str().unwrap());
     Ok(())
 }
 
-fn load_or_init_config(path: &str) -> Result<Vec<yaml_rust::Yaml>, Box<Error>> {
+fn load_or_init_config(path: &str) -> Result<yaml_rust::Yaml, Box<Error>> {
     let path = path.to_owned();
     let config_path = path.clone() + "/dotfile.yaml";
     let resolved_path = Path::new(&config_path).to_str().unwrap();
@@ -47,5 +47,6 @@ fn load_or_init_config(path: &str) -> Result<Vec<yaml_rust::Yaml>, Box<Error>> {
             init_string
         }
     };
-    Ok(YamlLoader::load_from_str(&config)?)
+    let results = &YamlLoader::load_from_str(&config)?[0];
+    Ok(results.clone())
 }
