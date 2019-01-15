@@ -1,0 +1,49 @@
+name: dotfile
+about: Helps manages dotfiles for Arch users
+args:
+    - location:
+        short: l
+        long: location
+        value_name: DOTFILE_DIR_PATH
+        help: Sets a custom config location.
+        default_value: "~/dotfiles"
+        takes_value: true
+    # - INPUT:
+    #     help: Sets the input file to use
+    #     required: true
+    #     index: 1
+    - verbose:
+        short: v
+        multiple: true
+        help: Sets the level of verbosity
+subcommands:
+    - add:
+        about: Populate
+        args:
+            - use:
+                short: u
+                long: use
+                multiple: true
+                help: Specify a dotfile folder to add the package to.
+                takes_value: true
+            - PKG:
+                multiple: true
+                help: What packages to add.
+                required: true
+    - remove:
+        about: removes
+    - stow:
+        about: Stow the dotfiles into the current directory
+        args:
+            - use:
+                short: u
+                long: use
+                multiple: true
+                help: Use a specific dotfile directory
+                takes_value: true
+            - nocommon:
+                short: "n"
+                help: Do not stow common dotfiles
+
+    - ignore:
+        about: Ignore a specific dotfile unless present in a
