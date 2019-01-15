@@ -6,7 +6,7 @@ args:
         long: location
         value_name: DOTFILE_DIR_PATH
         help: Sets a custom config location.
-        default_value: "~/dotfiles"
+        default_value: ~/dotfiles
         takes_value: true
     # - INPUT:
     #     help: Sets the input file to use
@@ -25,6 +25,7 @@ subcommands:
                 long: use
                 multiple: true
                 help: Specify a dotfile folder to add the package to.
+                default_value: common
                 takes_value: true
             - PKG:
                 multiple: true

@@ -5,27 +5,51 @@ extern crate yaml_rust;
 
 use clap::App;
 
-use std::fs;
-use std::fs::{create_dir_all};
-use std::path::Path;
 use std::error::Error;
+use std::fs;
+use std::fs::create_dir_all;
+use std::path::Path;
 use yaml_rust::YamlLoader;
 
+mod subcommands;
+
+/// Reads CLI and loads config file before passing into subcommand
 fn main() -> Result<(), Box<Error>> {
     let yaml = load_yaml!("cli.yaml");
     let matches = App::from_yaml(yaml)
-       .version(crate_version!())
-       .author(crate_authors!())
-       .get_matches();
+        .version(crate_version!())
+        .author(crate_authors!())
+        .get_matches();
 
-    // Should never panic because Location has a default value.
-    let config_dir = matches.value_of("location").expect("Location not provided!");
-    let config_dir = config_dir.replace("~",
-                                dirs::home_dir().expect("Could not find home dir!")
-                                                .to_str().expect("Failed to stringify home dir"));
+    let config_dir = parse_config_dir(&matches);
     let configs = load_or_init_config(&config_dir)?;
     println!("{:?}", configs["version"].as_str().unwrap());
+    println!("{:?}", matches);
+    match matches.subcommand_name() {
+        add => subcommands::add::handler(configs, matches),
+        remove => println!("kek!"),
+        stow => println!("stow"),
+        ignore => println!("ignored"),
+    };
     Ok(())
+}
+
+/// Parses the input args and attempts to locate the config directory
+fn parse_config_dir(matches: &clap::ArgMatches) -> String {
+    // Should never panic because Location has a default value.
+    let config_dir = matches
+        .value_of("location")
+        .expect("Location not provided!");
+    // Since the default args uses ~, which is a shell-dependent feature, we
+    // need to substitute ~ into the home directory. The dirs package is a
+    // platform-independent solution.
+    config_dir.replace(
+        "~",
+        dirs::home_dir()
+            .expect("Could not find home dir!")
+            .to_str()
+            .expect("Failed to stringify home dir"),
+    )
 }
 
 fn load_or_init_config(path: &str) -> Result<yaml_rust::Yaml, Box<Error>> {
