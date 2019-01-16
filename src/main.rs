@@ -20,23 +20,33 @@ fn main() -> Result<(), Box<Error>> {
     let mut app = App::from_yaml(&yaml).version(crate_version!()).author(crate_authors!());
     let matches = app.clone().get_matches();
 
-    let config_dir = parse_config_dir(&matches);
-    let configs = load_or_init_config(&config_dir)?;
+    let dotfile_config = load_or_init_settings()?;
+    let dotfile_dir = parse_config_dir(&matches);
+    let dotfile_dir_config = load_or_init_config(&dotfile_dir)?;
 
     // println!("{:?}", configs["version"].as_str().unwrap());
     // println!("{:?}", matches);
 
-    match matches.subcommand_name().unwrap_or_default() {
-        "init" => subcommands::init::handler(configs, matches),
-        "use" => subcommands::use_cmd::handler(configs, matches),
-        "add" => subcommands::add::handler(configs, matches),
-        "remove" => subcommands::remove::handler(configs, matches),
-        "group" => subcommands::group::handler(configs, matches),
-        "install" => subcommands::install::handler(configs, matches),
+    let params = (dotfile_config, dotfile_dir_config, matches);
+
+    match params.2.subcommand_name().unwrap_or_default() {
+        "init" => subcommands::init::handler(params),
+        "use" => subcommands::use_cmd::handler(params),
+        "add" => subcommands::add::handler(params),
+        "remove" => subcommands::remove::handler(params),
+        "group" => subcommands::group::handler(params),
+        "install" => subcommands::install::handler(params),
         _ => app.print_help()?,
     };
 
     Ok(())
+}
+
+fn load_or_init_settings() -> Result<yaml_rust::Yaml, Box<Error>> {
+    let config_dir = dirs::home_dir().expect("Home dir not found!");
+    let config_dir = config_dir.to_str().expect("Can't stringify home dir!");
+    let config = fs::read_to_string(config_dir.to_owned() + "/.config/dotfile/config.yaml")?;
+    Ok(YamlLoader::load_from_str(&config)?[0].clone())
 }
 
 /// Parses the input args and attempts to locate the config directory.
