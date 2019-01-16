@@ -27,10 +27,12 @@ fn main() -> Result<(), Box<Error>> {
     // println!("{:?}", matches);
 
     match matches.subcommand_name().unwrap_or_default() {
+        "init" => subcommands::init::handler(configs, matches),
+        "use" => subcommands::use_cmd::handler(configs, matches),
         "add" => subcommands::add::handler(configs, matches),
         "remove" => subcommands::remove::handler(configs, matches),
-        "stow" => subcommands::stow::handler(configs, matches),
-        "ignore" => subcommands::ignore::handler(configs, matches),
+        "group" => subcommands::group::handler(configs, matches),
+        "install" => subcommands::install::handler(configs, matches),
         _ => app.print_help()?,
     };
 
