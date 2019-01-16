@@ -2,13 +2,13 @@ use std::fs::{create_dir_all, read_to_string, OpenOptions};
 use std::io::Write;
 use std::path::PathBuf;
 
-use dirs::home_dir;
+use dirs::config_dir;
 
 use yaml_rust::YamlLoader;
 
 pub fn load_config() -> yaml_rust::Yaml {
     // Okay to use unwrap, if a home dir isn't present we have other problems.
-    let path = home_dir().unwrap().join("./.config/dotfile/config.yaml");
+    let path = config_dir().unwrap().join("./dotfile/config.yaml");
     let configs = match read_to_string(&path) {
         Ok(config) => config,
         Err(_e) => init_config(path)

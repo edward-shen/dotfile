@@ -34,8 +34,8 @@ fn main() -> Result<(), Box<Error>> {
     let dotfile_dir_config = load_or_init_config(dotfile_dir)?;
 
     // println!("{:?}", configs["version"].as_str().unwrap());
-    println!("{:?}", dotfile_config["helper"].is_null());
-    println!("{:?}", matches);
+    // println!("{:?}", dotfile_config["helper"].is_null());
+    // println!("{:?}", matches);
 
     let params = (dotfile_config, dotfile_dir_config, matches);
 
