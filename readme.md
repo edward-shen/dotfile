@@ -53,17 +53,13 @@ dotfile use --helper
 # Set default dotfile repository location
 dotfile use --path /path/of/repo
 
-# Sets group1 to be the default group to add
-dotfile use --group-default group1
-
-# Sets the common dotfile group to be the default group
-dotfile use --group-default
-
+# Reset the default dotfile repository to ~/dotfiles
+dotfile use --path
 
 ## Complex examples
 
-# You can set up multiple configs as well
-dotfile use --group-default --path /foo/bar --helper yay
+# You can simutanously set up multiple configs as well
+dotfile use --path /foo/bar --helper yay
 ```
 
 ### Adding packages
@@ -81,19 +77,26 @@ dotfile add --populate
 dotfile add mpv
 
 # Adds mpv, chromium, and vscode to the default group
-dotfile add mpv chromium vscode
+dotfile add --packages mpv chromium vscode
 
 # Adds mpv to the dotfile group "group1", and attempts to stow away its config
 # folder in ~/.config
-dotfile add --group group1 mpv
+dotfile add mpv --groups group1
+
+# Adds mpv to multiple groups, and attempts to stow away its config folder.
+dotfile add mpv --groups group1 group2
+
+# Adds mpv and vscode to multiple groups, and attempts to stow away the config
+# folders
+dtofile add --packages mpv vscode --group group1 group2
 
 # Adds mpv to the default group with a specified config folder
-dotfile add --config /path/to/config/dir mpv
+dotfile add mpv --config /path/to/config/dir
 
 # Adds some Xorg config files and folders. If -c is specified, dotfile will not
 # attempt to look for a directory under the same name under ~/.config
 # -c is equivalent to --config
-dotfile add -c ~/.icons -c ~/.Xresources -c ~/.xinitrc x
+dotfile add -c ~/.config/Xorg/.icons/ ~/.Xresources ~/.xinitrc -- x
 
 # Adds mpv without trying to stow away a config folder
 dotfile add --no-config mpv
@@ -103,9 +106,6 @@ dotfile add --no-config mpv
 
 # Adds mpv to a nondefault dotfile path and into their group2
 dotfile add --path /path/to/other/dotfile/path --group group2 mpv
-
-# You can specific multiple dotfile groups as well
-dotfile add --group group1 mpv zsh --group group2 vscode neofetch
 ```
 
 ### Removing packages
@@ -119,7 +119,7 @@ dotfile remove mpv chromium vscode
 # Removes mpv from the default group but keeps the config directory
 dotfile remove --keep-config mpv
 
-# Removes mpv from group1
+# Removes mpv from only group1
 dotfile remove --group group1 mpv
 
 # Removes mpv from the specified dotfile path and unstows the config directory

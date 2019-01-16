@@ -3,12 +3,13 @@ extern crate clap;
 extern crate dirs;
 extern crate yaml_rust;
 
-use clap::App;
-
 use std::error::Error;
 use std::fs;
 use std::fs::create_dir_all;
 use std::path::Path;
+
+use clap::App;
+
 use yaml_rust::YamlLoader;
 
 mod subcommands;
@@ -17,7 +18,9 @@ mod subcommands;
 /// subcommand handler.
 fn main() -> Result<(), Box<Error>> {
     let yaml = load_yaml!("cli.yaml");
-    let mut app = App::from_yaml(&yaml).version(crate_version!()).author(crate_authors!());
+    let app = App::from_yaml(&yaml)
+        .version(crate_version!())
+        .author(crate_authors!());
     let matches = app.clone().get_matches();
 
     let dotfile_config = load_or_init_settings()?;
@@ -25,7 +28,7 @@ fn main() -> Result<(), Box<Error>> {
     let dotfile_dir_config = load_or_init_config(&dotfile_dir)?;
 
     // println!("{:?}", configs["version"].as_str().unwrap());
-    // println!("{:?}", matches);
+    println!("{:?}", matches);
 
     let params = (dotfile_config, dotfile_dir_config, matches);
 
@@ -36,7 +39,7 @@ fn main() -> Result<(), Box<Error>> {
         "remove" => subcommands::remove::handler(params),
         "group" => subcommands::group::handler(params),
         "install" => subcommands::install::handler(params),
-        _ => app.print_help()?,
+        _ => (),
     };
 
     Ok(())
@@ -45,7 +48,12 @@ fn main() -> Result<(), Box<Error>> {
 fn load_or_init_settings() -> Result<yaml_rust::Yaml, Box<Error>> {
     let config_dir = dirs::home_dir().expect("Home dir not found!");
     let config_dir = config_dir.to_str().expect("Can't stringify home dir!");
-    let config = fs::read_to_string(config_dir.to_owned() + "/.config/dotfile/config.yaml")?;
+    let config = fs::read_to_string(config_dir.to_owned() + "/.config/dotfile/config.yaml");
+    let config = match config {
+        Ok(config) => config,
+        Err(e) => String::from("foobar"),
+    };
+
     Ok(YamlLoader::load_from_str(&config)?[0].clone())
 }
 

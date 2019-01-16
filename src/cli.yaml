@@ -1,5 +1,10 @@
 name: dotfile
 about: Helps manages dotfiles for Arch users
+settings:
+    - VersionlessSubcommands
+    - InferSubcommands
+    - DeriveDisplayOrder
+    - ArgRequiredElseHelp
 args:
     - location:
         short: l
@@ -8,43 +13,160 @@ args:
         help: Sets a custom config location.
         default_value: ~/dotfiles
         takes_value: true
-    # - INPUT:
-    #     help: Sets the input file to use
-    #     required: true
-    #     index: 1
     - verbose:
         short: v
+        long: verbose
         multiple: true
+        global: true
         help: Sets the level of verbosity
 subcommands:
-    - add:
-        about: Populate
+    - init:
+        about: Initialize a new dotfile folder, or initialize one from a
+            standard stow directory.
         args:
-            - use:
-                short: u
-                long: use
-                multiple: true
-                help: Specify a dotfile folder to add the package to.
-                default_value: common
-                takes_value: true
-            - PKG:
-                multiple: true
-                help: What packages to add.
-                required: true
-    - remove:
-        about: removes
-    - stow:
-        about: Stow the dotfiles into the current directory
+            - stow_dir:
+                short: f
+                long: from
+                help: Convert the specified directory from a standard stow
+                    directory to a dotfile directory.
+            - PATH:
+                default_value: ~/dotfiles
+                help: The path to create a new dotfile directory.
+    - use:
+        about: Set dotfile defaults.
+        settings:
+            - ArgRequiredElseHelp
         args:
-            - use:
-                short: u
-                long: use
-                multiple: true
-                help: Use a specific dotfile directory
+            - helper:
+                short: a
+                long: aur-helper
+                help: Set an AUR helper to use when installing packages.
                 takes_value: true
-            - nocommon:
+            - path:
+                short: p
+                long: path
+                help: Set the default dotfile directory to use.
+                takes_value: true
+    - add: # FIXME: Have less stupid arg controls
+        about: Add packages and configs to the dotfiles.
+        settings:
+            - ArgRequiredElseHelp
+        args:
+            - path:
+                short: P
+                long: path
+                help: Specify a path to use that's different from the set one.
+                takes_value: true
+            - groups:
+                short: g
+                long: group
+                help: Specify what group(s) to add the specified packages to.
+                takes_value: true
+                min_values: 1
+            - configs:
+                short: c
+                long: config
+                help: Specify config folders or config files to stow. Cannot
+                    specify multiple packages when using this option.
+                takes_value: true
+                min_values: 1
+                requires: PKG
+                conflicts_with: [no-config, PKGS]
+            - no_config:
                 short: "n"
-                help: Do not stow common dotfiles
-
-    - ignore:
-        about: Ignore a specific dotfile unless present in a
+                long: no-config
+                help: Do not attempt to stow the config directory
+                conflicts_with: configs
+            - PKGS:
+                short: p
+                long: packages
+                help: Specify multiple packages to stow
+                takes_value: true
+                min_values: 1
+                conflicts_with: [ PKG, configs ]
+            - PKG:
+                help: What packages to add.
+                conflicts_with: PKGS
+    - remove:
+        about: Stops tracking packages or unstows configs from the dotfiles.
+        settings:
+            - ArgRequiredElseHelp
+        groups:
+            - needConfigOrPkgs:
+                args:
+                    - config
+                    - PKGS
+        args:
+            - keep_config:
+                short: k
+                long: keep-config
+                help: Do not unstow the config files for the specified packages.
+                requires: PKGS
+                conflicts_with: config
+            - groups:
+                short: g
+                long: group
+                help: Specify what group(s) to remove the specified packages or configs from.
+                takes_value: true
+                min_values: 1
+                requires: needConfigOrPkgs
+            - config:
+                short: c
+                long: config
+                help: Specify a config directory to unstow.
+                min_values: 1
+            - PKGS:
+                multiple: true
+                help: What packages to remove.
+    - group:
+        about: Manage dotfile groups.
+        settings:
+            - ArgRequiredElseHelp
+        args:
+            - new_group:
+                short: c
+                long: create
+                help: Create new groups.
+                takes_value: true
+                multiple: true
+            - to_delete:
+                short: r
+                long: remove
+                help: Unstows and removes the entire groups.
+                takes_value: true
+                multiple: true
+            - rename:
+                short: m
+                long: move
+                help: Rename a group from the first arg to the second arg
+                value_names:
+                    - src
+                    - dest
+                conflicts_with: [ new_group, to_delete ]
+    - install:
+        about: Install common dotfiles
+        settings:
+            - ArgRequiredElseHelp
+        groups:
+            - oneGroup:
+                required: true
+                args:
+                    - GROUPS
+                    - group
+        args:
+            - bool:
+                short: u
+                long: uncommon
+                help: "uncommon install: Don't install common dotfiles."
+            - group:
+                short: "n"
+                long: no-script
+                help: "Install a group without running its install scripts."
+                takes_value: true
+            - no_scripts:
+                short: "N"
+                long: no-scripts
+                help: Do not run any install scripts.
+            - GROUPS:
+                multiple: true
+                help: Groups to install.
