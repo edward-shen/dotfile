@@ -27,10 +27,7 @@ fn main() -> Result<(), Box<Error>> {
         .get_matches();
 
     let dotfile_config = config::dotfile::load_config();
-    let dotfile_dir = match matches.value_of("location") {
-        Some(loc) => Path::new(loc).to_path_buf(),
-        _ => home_dir().unwrap().join("./dotfiles"),
-    };
+    let dotfile_dir = Path::new(matches.value_of("location").unwrap_or_else(|| ".")).to_path_buf();
     let dotfile_dir_config = load_or_init_config(dotfile_dir)?;
 
     // println!("{:?}", configs["version"].as_str().unwrap());
