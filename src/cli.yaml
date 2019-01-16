@@ -11,7 +11,6 @@ args:
         long: location
         value_name: DOTFILE_DIR_PATH
         help: Sets a custom config location.
-        default_value: ~/dotfiles
         takes_value: true
     - verbose:
         short: v

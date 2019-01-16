@@ -6,13 +6,16 @@ extern crate yaml_rust;
 use std::error::Error;
 use std::fs;
 use std::fs::create_dir_all;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use clap::App;
 
 use yaml_rust::YamlLoader;
 
+use dirs::home_dir;
+
 mod subcommands;
+mod config;
 
 /// Reads CLI args and loads config file and passes them into the respective
 /// subcommand handler.
@@ -23,11 +26,15 @@ fn main() -> Result<(), Box<Error>> {
         .author(crate_authors!());
     let matches = app.clone().get_matches();
 
-    let dotfile_config = load_or_init_settings()?;
-    let dotfile_dir = parse_config_dir(&matches);
-    let dotfile_dir_config = load_or_init_config(&dotfile_dir)?;
+    let dotfile_config = config::dotfile::load_config();
+    let dotfile_dir = match matches.value_of("location") {
+        Some(loc) => Path::new(loc).to_path_buf(),
+        _ => home_dir().unwrap().join("./dotfiles")
+    };
+    let dotfile_dir_config = load_or_init_config(dotfile_dir)?;
 
     // println!("{:?}", configs["version"].as_str().unwrap());
+    println!("{:?}", dotfile_config["helper"].is_null());
     println!("{:?}", matches);
 
     let params = (dotfile_config, dotfile_dir_config, matches);
@@ -45,52 +52,13 @@ fn main() -> Result<(), Box<Error>> {
     Ok(())
 }
 
-fn load_or_init_settings() -> Result<yaml_rust::Yaml, Box<Error>> {
-    let config_dir = dirs::home_dir().expect("Home dir not found!");
-    let config_dir = config_dir.to_str().expect("Can't stringify home dir!");
-    let config = fs::read_to_string(config_dir.to_owned() + "/.config/dotfile/config.yaml");
-    let config = match config {
-        Ok(config) => config,
-        Err(e) => String::from("foobar"),
-    };
-
-    Ok(YamlLoader::load_from_str(&config)?[0].clone())
-}
-
-/// Parses the input args and attempts to locate the config directory.
-///
-/// Returns the expanded location path.
-///
-/// # Arguments
-///
-/// * `matches` - The matches object obtained from the clap library.
-///
-fn parse_config_dir(matches: &clap::ArgMatches) -> String {
-    // Should never panic because Location has a default value.
-    let config_dir = matches
-        .value_of("location")
-        .expect("Location not provided!");
-
-    // Since the default args uses ~, which is a shell-dependent feature, we
-    // need to substitute ~ into the home directory. The dirs package is a
-    // platform-independent solution.
-    config_dir.replace(
-        "~",
-        dirs::home_dir()
-            .expect("Could not find home dir!")
-            .to_str()
-            .expect("Failed to stringify home dir!"),
-    )
-}
-
 /// Generates and/or loads the config file at the provided path location.
 ///
 /// # Arguments
 ///
 /// * `path` - the path of the dotfile directory. Can be relative or absolute.
-fn load_or_init_config(path: &str) -> Result<yaml_rust::Yaml, Box<Error>> {
-    let path = path.to_owned();
-    let config_path = path.clone() + "/dotfile.yaml";
+fn load_or_init_config(path: PathBuf) -> Result<yaml_rust::Yaml, Box<Error>> {
+    let config_path = path.join("./dotfile.yaml");
     let resolved_path = Path::new(&config_path).to_str().unwrap();
     let config = match fs::read_to_string(&resolved_path) {
         Ok(conf) => conf,
