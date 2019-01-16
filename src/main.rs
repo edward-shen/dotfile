@@ -14,22 +14,22 @@ use yaml_rust::YamlLoader;
 
 use dirs::home_dir;
 
-mod subcommands;
 mod config;
+mod subcommands;
 
 /// Reads CLI args and loads config file and passes them into the respective
 /// subcommand handler.
 fn main() -> Result<(), Box<Error>> {
     let yaml = load_yaml!("cli.yaml");
-    let app = App::from_yaml(&yaml)
+    let matches = App::from_yaml(&yaml)
         .version(crate_version!())
-        .author(crate_authors!());
-    let matches = app.clone().get_matches();
+        .author(crate_authors!())
+        .get_matches();
 
     let dotfile_config = config::dotfile::load_config();
     let dotfile_dir = match matches.value_of("location") {
         Some(loc) => Path::new(loc).to_path_buf(),
-        _ => home_dir().unwrap().join("./dotfiles")
+        _ => home_dir().unwrap().join("./dotfiles"),
     };
     let dotfile_dir_config = load_or_init_config(dotfile_dir)?;
 
