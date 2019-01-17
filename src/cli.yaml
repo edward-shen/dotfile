@@ -7,10 +7,10 @@ settings:
     - ArgRequiredElseHelp
 args:
     - location:
-        short: l
-        long: location
-        value_name: DOTFILE_DIR_PATH
-        help: Sets a custom config location.
+        short: c
+        long: custom-dotfile-config
+        value_name: PATH
+        help: Sets a custom config location for dotfile.
         takes_value: true
     - verbose:
         short: v

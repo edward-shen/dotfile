@@ -11,7 +11,7 @@ pub fn load_config() -> yaml_rust::Yaml {
     let path = config_dir().unwrap().join("./dotfile/config.yaml");
     let configs = match read_to_string(&path) {
         Ok(config) => config,
-        Err(_e) => init_config(path)
+        Err(_e) => init_config(path),
     };
 
     YamlLoader::load_from_str(&configs).expect("Malformed config file!")[0].clone()
@@ -22,8 +22,13 @@ fn init_config(path: PathBuf) -> String {
         create_dir_all(path.parent().unwrap()).expect("Cannot create config directory!")
     }
 
-    let mut file = OpenOptions::new().write(true).create_new(true).open(&path).expect("Could not create config file");
-    file.write(b"helper: \npath: ~/dotfiles").expect("Could not write to file!");
+    let mut file = OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(&path)
+        .expect("Could not create config file");
+    file.write(b"helper: \npath: ~/dotfiles")
+        .expect("Could not write to file!");
 
     // Unwrapping should be safe here.
     read_to_string(path).unwrap()
@@ -31,7 +36,6 @@ fn init_config(path: PathBuf) -> String {
 
 // pub fn load_config(path: String) -> Result<yaml_rust::Yaml, String> {
 //     let path = resolve_path(path);
-
 //     File::open
 //     let config = if path.exists() {
 //         YamlLoader::load_from_str(&read_to_string(path.to_str().unwrap()).unwrap())
@@ -42,8 +46,5 @@ fn init_config(path: PathBuf) -> String {
 //             Err(String::from("Could not load config file!"))
 //         }
 //     };
-
-    
-
 //     Ok(config.unwrap_or("could not read")[0])
 // }
