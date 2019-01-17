@@ -17,7 +17,7 @@ pub fn handler((_, args): (&yaml_rust::Yaml, &clap::ArgMatches)) -> Result<(), S
 
     if let Ok(can_init) = can_init(&path) {
         if can_init {
-            init_repository(&path);
+            return init_repository(&path);
         } else {
             if args.is_present("stow_dir") {
                 unimplemented!("adopting a stow file");
