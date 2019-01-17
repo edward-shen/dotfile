@@ -18,10 +18,10 @@ fn main() -> Result<(), String> {
         .get_matches();
 
     let dotfile_config = config::dotfile::load_config();
-    // let dotfile_dir = Path::new(matches.value_of("location").unwrap_or_else(|| ".")).to_path_buf();
 
+    // println!("dotfile .config: {:?}", dotfile_config["helper"].is_null());
+    // let dotfile_dir = Path::new(matches.value_of("location").unwrap_or_else(|| ".")).to_path_buf();
     // println!("{:?}", dotfile_dir_config["version"].as_str().expect("Could not find version string in local dotfile config"));
-    println!("dotfile .config: {:?}", dotfile_config["helper"].is_null());
     // println!("{:?}", matches);
 
     let params = (&dotfile_config, &matches);

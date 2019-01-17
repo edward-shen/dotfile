@@ -55,35 +55,41 @@ fn can_init(path: &PathBuf) -> Result<bool, String> {
 }
 
 /// Preforms all steps required to initialize a dotfile repository.
-fn init_repository(path: &PathBuf) {
-    prep_dir(&path);
-    init_dotfile_config(&path);
-    init_vcs(&path);
+fn init_repository(path: &PathBuf) -> Result<(), String> {
+    prep_dir(&path)?;
+    init_dotfile_config(&path)?;
+    init_vcs(&path)?;
+    Ok(())
 }
 
-fn prep_dir(path: &PathBuf) {
+fn prep_dir(path: &PathBuf) -> Result<(), String> {
     if !path.exists() {
-        if let Err(e) = create_dir_all(&path) {
-            eprintln!(
+        match create_dir_all(&path) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(format!(
                 "Error while creating directory {}: {}",
                 path.display(),
                 e.description()
-            )
+            )),
         }
+    } else {
+        Ok(())
     }
 }
 
-fn init_dotfile_config(path: &PathBuf) {
+fn init_dotfile_config(path: &PathBuf) -> Result<(), String> {
     let init_string = format!("version: {}", crate_version!());
     if let Err(e) = write(path.join("dotfile.yaml"), &init_string) {
-        panic!(
+        Err(format!(
             "Could not write local dotfile config file! {}",
-            e.description()
-        );
-    };
+            e.description(),
+        ))
+    } else {
+        Ok(())
+    }
 }
 
-fn init_vcs(path: &PathBuf) {
+fn init_vcs(path: &PathBuf) -> Result<(), String> {
     let exit_code = Command::new("git")
         .args(&["init", path.to_str().unwrap()])
         .stdout(Stdio::null())
@@ -96,4 +102,6 @@ fn init_vcs(path: &PathBuf) {
         Some(val) => panic!("git exited with exit code {}", val),
         None => panic!("git process terminated by signal"),
     }
+
+    Ok(())
 }
