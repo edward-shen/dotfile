@@ -1,8 +1,8 @@
 # dotfile
 
 A fast, lightweight, and extensible dotfile manager and post-install installer
-for Arch users. Use `dotfile` as a simple way to manage dotfiles anywhere or as
-a method
+for Arch users. Use `dotfile` as a simple way to manage dotfiles anywhere and
+a way for users to quickly get back on their feet after a fresh installation.
 
 ## Features
 
@@ -10,6 +10,7 @@ a method
 - Backwards compatible with `stow`
 - Pre- and Post-run scripting support (*Planned*, v1.1)
 - Semi-automated initialization and configuration
+- AUR helper support
 
 ## Installation
 
