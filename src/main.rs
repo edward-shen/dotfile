@@ -3,6 +3,8 @@ extern crate clap;
 extern crate dirs;
 extern crate yaml_rust;
 
+use std::io::Error;
+
 use clap::App;
 
 mod config;
@@ -10,7 +12,7 @@ mod subcommands;
 
 /// Parses top-level CLI arguments, loads the dotfile config, and then passes
 /// the loaded configs into the subcommand handler
-fn main() -> Result<(), String> {
+fn main() -> Result<(), Error> {
     let yaml = load_yaml!("cli.yaml");
     let matches = App::from_yaml(&yaml)
         .version(crate_version!())
