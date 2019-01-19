@@ -1,6 +1,6 @@
 use std::env::current_dir;
 use std::fs::{create_dir_all, read_dir, write};
-use std::io::{Error, ErrorKind};
+use std::io::{stdin, stdout, Error, ErrorKind, Write};
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 
@@ -77,6 +77,38 @@ fn init_vcs(path: &PathBuf) -> Result<(), Error> {
 }
 
 fn adopt_repository(path: &PathBuf) -> Result<(), Error> {
-    unimplemented!("Adopting the repository is not done yet!");
+    let should_continue = get_confirmation();
+
+    if !should_continue {
+        return Err(Error::new(
+            ErrorKind::PermissionDenied,
+            "User denied permission to modify directory!",
+        ));
+    }
     Ok(())
+}
+
+fn get_confirmation() -> bool {
+    let mut input = String::new();
+
+    while input != "y" && input != "n" {
+        input.clear();
+
+        print!("Warning: this option will modify the contents of the directory. Proceed? [y/N] ");
+        // Stdout is line buffered by default, need to flush for it to be printed.
+        stdout().flush().expect("Could not flush stdout!");
+
+        stdin()
+            .read_line(&mut input)
+            .expect("Could not read from input!");
+
+        input = input.trim_end().to_ascii_lowercase();
+
+        // Default to no
+        if input.is_empty() {
+            input = String::from("n");
+        }
+    }
+
+    input == "y"
 }
