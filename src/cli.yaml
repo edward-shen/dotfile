@@ -31,6 +31,13 @@ subcommands:
             - PATH:
                 default_value: ~/dotfiles
                 help: The path to create a new dotfile directory.
+            - ignore:
+                short: i
+                long: ignore
+                help: Folders to ignore when adopting a directory.
+                requires: stow_dir
+                takes_value: true
+                multiple: true
     - use:
         about: Set dotfile defaults.
         settings:

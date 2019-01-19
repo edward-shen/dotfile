@@ -1,10 +1,12 @@
 use std::env::current_dir;
-use std::fs::{create_dir_all, read_dir, write};
+use std::fs::{create_dir, create_dir_all, read_dir, rename, write, DirEntry};
 use std::io::{stdin, stdout, Error, ErrorKind, Write};
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 
 use dirs::home_dir;
+
+const COMMON_DIR: &'static str = "common";
 
 pub fn handler((_, args): (&yaml_rust::Yaml, &clap::ArgMatches)) -> Result<(), Error> {
     let args = args
@@ -21,7 +23,7 @@ pub fn handler((_, args): (&yaml_rust::Yaml, &clap::ArgMatches)) -> Result<(), E
         init_repository(&path)
     } else {
         if args.is_present("stow_dir") {
-            adopt_repository(&path)
+            adopt_repository(&path, &args)
         } else {
             Err(Error::new(
                 ErrorKind::AlreadyExists,
@@ -48,53 +50,105 @@ fn init_repository(path: &PathBuf) -> Result<(), Error> {
     Ok(())
 }
 
+/// Creates the directory and/or the common directory if it doesn't exist.
 fn prep_dir(path: &PathBuf) -> Result<(), Error> {
     if !path.exists() {
-        create_dir_all(&path)
+        create_dir_all(&path.join(COMMON_DIR))
     } else {
         Ok(())
     }
 }
 
 fn init_dotfile_config(path: &PathBuf) -> Result<(), Error> {
-    let init_string = format!("version: {}", crate_version!());
+    let init_string = format!("version: {}\n\ncommon:", crate_version!());
     write(path.join("dotfile.yaml"), &init_string)
 }
 
 fn init_vcs(path: &PathBuf) -> Result<(), Error> {
     let exit_code = Command::new("git")
-        .args(&["init", path.to_str().unwrap()])
+        .current_dir(path)
+        .arg("init")
         .stdout(Stdio::null())
         .status()
         .expect("Failed to execute git. Is it installed?")
         .code();
 
     match exit_code {
-        Some(0) => Ok(()),
+        Some(0) => (),
         Some(val) => panic!("git exited with exit code {}", val),
         None => panic!("git process terminated by signal"),
-    }
-}
+    };
 
-fn adopt_repository(path: &PathBuf) -> Result<(), Error> {
-    let should_continue = get_confirmation();
+    Command::new("git")
+        .current_dir(path)
+        .args(&["add", "."])
+        .stdout(Stdio::null())
+        .output()
+        .expect("Error while adding all directories to git.");
 
-    if !should_continue {
-        return Err(Error::new(
-            ErrorKind::PermissionDenied,
-            "User denied permission to modify directory!",
-        ));
-    }
+    Command::new("git")
+        .current_dir(path)
+        .args(&["commit", "-m", "Initial commit"])
+        .stdout(Stdio::null())
+        .output()
+        .expect("Failed to commit all files");
+
     Ok(())
 }
 
-fn get_confirmation() -> bool {
+/// Converts a standard stow repository to a dotfile repository by initalizing
+/// a dotfile config file and moving all non-hidden folders to a common
+/// subfolder.
+fn adopt_repository(path: &PathBuf, args: &clap::ArgMatches) -> Result<(), Error> {
+    if !get_confirmation(path) {
+        return Err(Error::new(
+            ErrorKind::PermissionDenied, // I mean this is correct, but probably a bad idea later
+            "User denied permission to modify directory!",
+        ));
+    }
+
+    let common_dir_path = path.join(COMMON_DIR);
+    create_dir(&common_dir_path).expect("Could not create folder \"common\" in folder to adopt.");
+
+    let ignore_list: Vec<&str> = match args.values_of("ignore") {
+        Some(e) => e.collect(),
+        _ => vec![],
+    };
+
+    let path_iter = path
+        .read_dir()
+        .expect("Could not read directory")
+        .filter_map(|ele| {
+            let ele = ele.unwrap();
+            if ignore_list.contains(&ele.file_name().to_str().unwrap()) {
+                None
+            } else {
+                Some(ele)
+            }
+        });
+
+    for item in path_iter {
+        if can_move(&item, &common_dir_path) {
+            stow_move(&item, &common_dir_path);
+        }
+    }
+
+    init_dotfile_config(&path)
+}
+
+/// Gets confirmation for us to mutate the user directory. Will continuously ask
+/// for input until user explicitly gives yes or no. If no input was provided,
+/// input is defaulted to no.
+fn get_confirmation(path: &PathBuf) -> bool {
     let mut input = String::new();
 
     while input != "y" && input != "n" {
         input.clear();
 
-        print!("Warning: this option will modify the contents of the directory. Proceed? [y/N] ");
+        print!(
+            "Warning: this option will modify the contents of {}. Proceed? [y/N] ",
+            path.display()
+        );
         // Stdout is line buffered by default, need to flush for it to be printed.
         stdout().flush().expect("Could not flush stdout!");
 
@@ -111,4 +165,41 @@ fn get_confirmation() -> bool {
     }
 
     input == "y"
+}
+
+/// Checks if the item is not equal to the target directory, if its a directory
+/// (versus a regular file), and if it's not a hidden file. Returns `true` if
+/// all cases are true.
+fn can_move(item: &DirEntry, common_path: &PathBuf) -> bool {
+    &item.path() != common_path
+        && item.file_type().expect("Could not get filetype!").is_dir()
+        && item
+            .file_name()
+            .to_str()
+            .expect("Could not stringify filename")
+            .get(0..1)
+            .unwrap_or_else(|| panic!("Got a 0 length filename?!"))
+            != "."
+}
+
+/// Unstows all dotfiles from the home directory and restows them after moving
+/// them to the common directory.
+fn stow_move(src: &DirEntry, dest: &PathBuf) {
+    let dir_name = src.file_name();
+    let dir_name = dir_name.to_str().expect("");
+
+    Command::new("stow")
+        .current_dir(dest.parent().unwrap())
+        .args(&["-D", dir_name])
+        .output()
+        .expect("Failed to execute stow! Is it installed?");
+
+    let dest_path = &dest.join(src.file_name());
+    rename(src.path(), dest_path).expect("Failed to move folder!");
+
+    Command::new("stow")
+        .current_dir(dest)
+        .args(&["-t", home_dir().unwrap().to_str().unwrap(), "-S", dir_name])
+        .output()
+        .expect("Could not execute stow!");
 }
