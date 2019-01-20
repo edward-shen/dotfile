@@ -1,6 +1,5 @@
-use std::collections::HashMap;
 use std::env::current_dir;
-use std::fs::{create_dir, create_dir_all, read_dir, rename, write, DirEntry};
+use std::fs::{create_dir, create_dir_all, read_dir, rename, DirEntry};
 use std::io::{stdin, stdout, Error, ErrorKind, Write};
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
@@ -8,7 +7,7 @@ use std::process::{Command, Stdio};
 use dirs::home_dir;
 
 use crate::config::dotfile::Config as GlobalConfig;
-use crate::config::local::{Config as LocalConfig, Group};
+use crate::config::local::init_config;
 
 const COMMON_DIR: &'static str = "common";
 
@@ -49,7 +48,7 @@ fn can_init(path: &PathBuf) -> Result<bool, Error> {
 /// Preforms all steps required to initialize a dotfile repository.
 fn init_repository(path: &PathBuf) -> Result<(), Error> {
     prep_dir(&path)?;
-    init_dotfile_config(&path)?;
+    init_config(&path)?;
     init_vcs(&path)?;
     Ok(())
 }
@@ -61,22 +60,6 @@ fn prep_dir(path: &PathBuf) -> Result<(), Error> {
     } else {
         Ok(())
     }
-}
-
-fn init_dotfile_config(path: &PathBuf) -> Result<(), Error> {
-    let mut groups = HashMap::new();
-    groups.insert(
-        String::from("common"),
-        Group {
-            packages: Vec::new(),
-        },
-    );
-    let config = LocalConfig {
-        version: crate_version!().to_string(),
-        groups,
-    };
-
-    write(path.join("dotfile.toml"), toml::to_string(&config).unwrap())
 }
 
 fn init_vcs(path: &PathBuf) -> Result<(), Error> {
@@ -148,7 +131,7 @@ fn adopt_repository(path: &PathBuf, args: &clap::ArgMatches) -> Result<(), Error
         }
     }
 
-    init_dotfile_config(&path)
+    init_config(&path)
 }
 
 /// Gets confirmation for us to mutate the user directory. Will continuously ask
