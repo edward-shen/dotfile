@@ -64,9 +64,9 @@ fn prep_dir(path: &PathBuf) -> Result<(), Error> {
 }
 
 fn init_dotfile_config(path: &PathBuf) -> Result<(), Error> {
-    let groups = HashMap::new();
+    let mut groups = HashMap::new();
     groups.insert(
-        "common",
+        String::from("common"),
         Group {
             packages: Vec::new(),
         },

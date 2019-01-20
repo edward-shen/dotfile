@@ -1,9 +1,10 @@
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {
     pub version: String,
-    pub groups: HashMap<Group>,
+    pub groups: HashMap<String, Group>,
 }
 
 #[derive(Serialize, Deserialize)]
