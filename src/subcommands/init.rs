@@ -7,8 +7,8 @@ use std::process::{Command, Stdio};
 
 use dirs::home_dir;
 
-use super::super::config::dotfile::Config as GlobalConfig;
-use super::super::config::local::{Config as LocalConfig, Group};
+use crate::config::dotfile::Config as GlobalConfig;
+use crate::config::local::{Config as LocalConfig, Group};
 
 const COMMON_DIR: &'static str = "common";
 
