@@ -1,2 +1,2 @@
 pub mod dotfile;
-pub mod custom;
+pub mod local;

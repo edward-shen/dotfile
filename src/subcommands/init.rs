@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::env::current_dir;
 use std::fs::{create_dir, create_dir_all, read_dir, rename, write, DirEntry};
 use std::io::{stdin, stdout, Error, ErrorKind, Write};
@@ -6,9 +7,12 @@ use std::process::{Command, Stdio};
 
 use dirs::home_dir;
 
+use super::super::config::dotfile::Config as GlobalConfig;
+use super::super::config::local::{Config as LocalConfig, Group};
+
 const COMMON_DIR: &'static str = "common";
 
-pub fn handler((_, args): (&yaml_rust::Yaml, &clap::ArgMatches)) -> Result<(), Error> {
+pub fn handler((_, args): (&GlobalConfig, &clap::ArgMatches)) -> Result<(), Error> {
     let args = args
         .subcommand_matches("init")
         .expect("Clap-rs gave us incorrect subcommand!");
@@ -60,8 +64,19 @@ fn prep_dir(path: &PathBuf) -> Result<(), Error> {
 }
 
 fn init_dotfile_config(path: &PathBuf) -> Result<(), Error> {
-    let init_string = format!("version: {}\n\ncommon:", crate_version!());
-    write(path.join("dotfile.yaml"), &init_string)
+    let groups = HashMap::new();
+    groups.insert(
+        "common",
+        Group {
+            packages: Vec::new(),
+        },
+    );
+    let config = LocalConfig {
+        version: crate_version!().to_string(),
+        groups,
+    };
+
+    write(path.join("dotfile.toml"), toml::to_string(&config).unwrap())
 }
 
 fn init_vcs(path: &PathBuf) -> Result<(), Error> {
