@@ -63,7 +63,7 @@ fn init_repository(path: &PathBuf) -> Result<(), Error> {
 /// Creates the directory and/or the common directory if it doesn't exist.
 fn prep_dir(path: &PathBuf) -> Result<(), Error> {
     if !path.exists() {
-        create_dir_all(&path.join(COMMON_DIR))
+        create_dir_all(path.join(COMMON_DIR))
     } else {
         Ok(())
     }
@@ -197,7 +197,7 @@ fn stow_move(src: &DirEntry, dest: &PathBuf) {
         .output()
         .expect("Failed to execute stow! Is it installed?");
 
-    let dest_path = &dest.join(src.file_name());
+    let dest_path = dest.join(src.file_name());
     rename(src.path(), dest_path).expect("Failed to move folder!");
 
     Command::new("stow")
