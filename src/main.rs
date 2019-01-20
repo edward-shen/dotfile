@@ -23,7 +23,7 @@ fn main() -> Result<(), Error> {
 
     match matches.subcommand_name().unwrap_or_default() {
         "init" => subcommands::init::handler(params),
-        // "use" => subcommands::use_cmd::handler(params),
+        "use" => subcommands::use_cmd::handler(params),
         // "add" => subcommands::add::handler(params),
         // "remove" => subcommands::remove::handler(params),
         // "group" => subcommands::group::handler(params),

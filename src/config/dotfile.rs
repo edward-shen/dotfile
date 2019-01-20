@@ -10,8 +10,8 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {
-    helper: Option<String>,
-    path: Option<String>,
+    pub helper: Option<String>,
+    pub path: Option<String>,
 }
 
 pub fn load_config() -> Config {
@@ -35,6 +35,26 @@ fn init_config(path: PathBuf) -> String {
         path: None,
     };
 
+    write_config(&path, config);
+
+    // Unwrapping should be safe here.
+    read_to_string(path).unwrap()
+}
+
+pub fn update_config(path: &PathBuf, config: Config) {
+    let mut new_config = load_config();
+    if config.helper.is_some() {
+        new_config.helper = config.helper;
+    }
+
+    if config.path.is_some() {
+        new_config.path = config.path;
+    }
+
+    write_config(path, new_config);
+}
+
+fn write_config(path: &PathBuf, config: Config) {
     let mut file = OpenOptions::new()
         .write(true)
         .create_new(true)
@@ -42,7 +62,4 @@ fn init_config(path: PathBuf) -> String {
         .expect("Could not create config file");
     file.write(toml::to_string(&config).unwrap().as_bytes())
         .expect("Could not write to file!");
-
-    // Unwrapping should be safe here.
-    read_to_string(path).unwrap()
 }

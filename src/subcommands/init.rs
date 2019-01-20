@@ -6,7 +6,7 @@ use std::process::{Command, Stdio};
 
 use dirs::home_dir;
 
-use crate::config::dotfile::Config as GlobalConfig;
+use crate::config::dotfile::{update_config, Config as GlobalConfig};
 use crate::config::local::init_config;
 
 const COMMON_DIR: &'static str = "common";
@@ -47,9 +47,16 @@ fn can_init(path: &PathBuf) -> Result<bool, Error> {
 
 /// Preforms all steps required to initialize a dotfile repository.
 fn init_repository(path: &PathBuf) -> Result<(), Error> {
-    prep_dir(&path)?;
-    init_config(&path)?;
-    init_vcs(&path)?;
+    prep_dir(path)?;
+    init_config(path)?;
+    init_vcs(path);
+
+    let config_to_update = GlobalConfig {
+        helper: None,
+        path: Some(String::from(path.to_str().unwrap())),
+    };
+
+    update_config(path, config_to_update);
     Ok(())
 }
 
@@ -62,7 +69,7 @@ fn prep_dir(path: &PathBuf) -> Result<(), Error> {
     }
 }
 
-fn init_vcs(path: &PathBuf) -> Result<(), Error> {
+fn init_vcs(path: &PathBuf) {
     let exit_code = Command::new("git")
         .current_dir(path)
         .arg("init")
@@ -90,8 +97,6 @@ fn init_vcs(path: &PathBuf) -> Result<(), Error> {
         .stdout(Stdio::null())
         .output()
         .expect("Failed to commit all files");
-
-    Ok(())
 }
 
 /// Converts a standard stow repository to a dotfile repository by initalizing
