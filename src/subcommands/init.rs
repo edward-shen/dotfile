@@ -6,31 +6,33 @@ use std::process::{Command, Stdio};
 
 use dirs::home_dir;
 
-use crate::config::dotfile::{update_config, Config as GlobalConfig};
+use crate::config::dotfile::{update_config as update_global_config, Config as GlobalConfig};
 use crate::config::local::init_config;
 
 const COMMON_DIR: &'static str = "common";
 
-pub fn handler((_, args): (&GlobalConfig, &clap::ArgMatches)) -> Result<(), Error> {
+pub fn handler(
+    (global_config_path, _, args): (&PathBuf, &GlobalConfig, &clap::ArgMatches),
+) -> Result<(), Error> {
     let args = args
         .subcommand_matches("init")
         .expect("Clap-rs gave us incorrect subcommand!");
     let home_dir = home_dir().expect("Could not locate home directory!");
     let home_dir = home_dir.to_str().expect("Could not stringify home path!");
     let path = args.value_of("PATH").expect("invalid path arg");
-    let path = current_dir()
+    let local_path = current_dir()
         .expect("could not get current directory")
         .join(path.replace("~", home_dir));
 
-    if can_init(&path)? {
-        init_repository(&path)
+    if can_init(&local_path)? {
+        init_repository(&local_path, global_config_path)
     } else {
         if args.is_present("stow_dir") {
-            adopt_repository(&path, &args)
+            adopt_repository(&local_path, &args)
         } else {
             Err(Error::new(
                 ErrorKind::AlreadyExists,
-                format!("{}: Directory is not empty.", path.display()),
+                format!("{}: Directory is not empty.", local_path.display()),
             ))
         }
     }
@@ -46,17 +48,17 @@ fn can_init(path: &PathBuf) -> Result<bool, Error> {
 }
 
 /// Preforms all steps required to initialize a dotfile repository.
-fn init_repository(path: &PathBuf) -> Result<(), Error> {
-    prep_dir(path)?;
-    init_config(path)?;
-    init_vcs(path);
+fn init_repository(local_config_path: &PathBuf, global_config_path: &PathBuf) -> Result<(), Error> {
+    prep_dir(local_config_path)?;
+    init_config(local_config_path)?;
+    init_vcs(local_config_path);
 
     let config_to_update = GlobalConfig {
         helper: None,
-        path: Some(String::from(path.to_str().unwrap())),
+        path: Some(String::from(local_config_path.to_str().unwrap())),
     };
 
-    update_config(path, config_to_update);
+    update_global_config(config_to_update, global_config_path);
     Ok(())
 }
 

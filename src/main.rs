@@ -3,6 +3,9 @@ extern crate clap;
 extern crate dirs;
 
 use std::io::Error;
+use std::path::PathBuf;
+
+use dirs::config_dir;
 
 use clap::App;
 
@@ -18,8 +21,14 @@ fn main() -> Result<(), Error> {
         .author(crate_authors!())
         .get_matches();
 
-    let dotfile_config = config::dotfile::load_config();
-    let params = (&dotfile_config, &matches);
+    let global_config_path = match matches.value_of("location") {
+        Some(e) => PathBuf::from(e),
+        None => config_dir().unwrap().join("./dotfile"),
+    };
+
+    let global_config = config::dotfile::load_config(&global_config_path);
+
+    let params = (&global_config_path, &global_config, &matches);
 
     match matches.subcommand_name().unwrap_or_default() {
         "init" => subcommands::init::handler(params),
