@@ -19,6 +19,7 @@ pub fn handler(
         .expect("Clap-rs gave us incorrect subcommand!");
     let home_dir = home_dir().expect("Could not locate home directory!");
     let home_dir = home_dir.to_str().expect("Could not stringify home path!");
+
     let path = args.value_of("PATH").expect("invalid path arg");
     let local_path = current_dir()
         .expect("could not get current directory")
