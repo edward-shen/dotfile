@@ -54,7 +54,6 @@ pub fn update_config(config: Config, path: &PathBuf) {
 pub fn write_config(config: Config, path: &PathBuf) {
     let mut file = OpenOptions::new()
         .write(true)
-        .create_new(true)
         .open(path)
         .expect("Could not create config file");
     file.write(toml::to_string(&config).unwrap().as_bytes())
