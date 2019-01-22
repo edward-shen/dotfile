@@ -36,7 +36,7 @@ fn main() -> Result<(), Error> {
         "add" => subcommands::add::handler(params),
         // "remove" => subcommands::remove::handler(params),
         "group" => subcommands::group::handler(params),
-        // "install" => subcommands::install::handler(params),
+        "install" => subcommands::install::handler(params),
         _ => panic!("clap-rs failed to handle invalid input!"),
     }
 }

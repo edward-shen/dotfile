@@ -169,6 +169,7 @@ subcommands:
                 long: no-script
                 help: "Install a group without running its install scripts."
                 takes_value: true
+                multiple: true
             - no_scripts:
                 short: "N"
                 long: no-scripts
