@@ -23,7 +23,7 @@ fn main() -> Result<(), Error> {
 
     let global_config_path = match matches.value_of("location") {
         Some(e) => PathBuf::from(e),
-        None => config_dir().unwrap().join("./dotfile"),
+        None => config_dir().unwrap().join("./dotfile/config.toml"),
     };
 
     let global_config = config::dotfile::load_config(&global_config_path);
@@ -33,9 +33,9 @@ fn main() -> Result<(), Error> {
     match matches.subcommand_name().unwrap_or_default() {
         "init" => subcommands::init::handler(params),
         "use" => subcommands::use_cmd::handler(params),
-        // "add" => subcommands::add::handler(params),
+        "add" => subcommands::add::handler(params),
         // "remove" => subcommands::remove::handler(params),
-        // "group" => subcommands::group::handler(params),
+        "group" => subcommands::group::handler(params),
         // "install" => subcommands::install::handler(params),
         _ => panic!("clap-rs failed to handle invalid input!"),
     }
