@@ -1,13 +1,16 @@
 use std::io::Error;
 use std::path::PathBuf;
 use std::process::Command;
+use std::time::{Duration, Instant};
+
+use tokio::prelude::*;
+use tokio::timer::Interval;
 
 use crate::config::dotfile::{load_config as load_global_config, Config as GlobalConfig};
 
 pub fn handler(
     (global_config_path, _, args): (&PathBuf, &GlobalConfig, &clap::ArgMatches),
 ) -> Result<(), Error> {
-    println!("{:?}", args);
 
     let run_scripts = !args.is_present("no_scripts");
     let global_config = load_global_config(global_config_path);
@@ -16,6 +19,9 @@ pub fn handler(
         .and_then(|path| Some(PathBuf::from(path)))
         .expect("Global config does not have custom dotfile path");
     let helper = global_config.helper;
+
+
+    start_sudo_timer();
 
     update_arch();
 
@@ -34,6 +40,11 @@ pub fn handler(
     }
 
     Ok(())
+}
+
+fn start_sudo_timer() {
+    Interval::new(Instant::now(), Duration::from_secs(60))
+        .for_each(|_| Command::new("sudo").arg("-v").output().expect("Could not run sudo!"));
 }
 
 fn update_arch() {

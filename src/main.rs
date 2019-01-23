@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate clap;
 extern crate dirs;
+extern crate tokio;
 
 use std::io::Error;
 use std::path::PathBuf;
