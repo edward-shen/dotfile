@@ -8,7 +8,7 @@ a way for users to quickly get back on their feet after a fresh installation.
 
 - Multiple dotfile configuration support
 - Backwards compatible with `stow`
-- Pre- and Post-run scripting support (*Planned*, v1.1)
+- Pre- and Post-run scripting support
 - Semi-automated initialization and configuration
 - AUR helper support
 
@@ -20,8 +20,14 @@ Arch users, please use an AUR helper to install `dotfile`.
 trizen -Syu dotfile
 ```
 
-Please refer to the ArchWiki for installing `dotfile` manually.
+If you can run Rust binaries e.g. from `cargo install <pkg>`, you can also install
+dotfile via:
 
+```bash
+cargo install dotfile
+```
+
+This is not recommended, as it installs a binary without the package manager's knowledge.
 
 ## Usage
 
