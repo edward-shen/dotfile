@@ -1,4 +1,4 @@
-use std::fs::{create_dir_all, read_to_string, OpenOptions};
+use std::fs::{write, create_dir_all, read_to_string};
 use std::io::Write;
 use std::path::PathBuf;
 
@@ -22,8 +22,11 @@ pub fn load_config(path: &PathBuf) -> Config {
 }
 
 fn init_config(path: &PathBuf) -> String {
-    if !path.parent().unwrap().exists() {
-        create_dir_all(path.parent().unwrap()).expect("Cannot create config directory!");
+
+    let global_config_dir = path.parent().unwrap();
+
+    if !global_config_dir.exists() {
+        create_dir_all(global_config_dir).expect("Cannot create config directory!");
     }
 
     let config = Config {
@@ -52,10 +55,5 @@ pub fn update_config(config: Config, path: &PathBuf) {
 }
 
 pub fn write_config(config: Config, path: &PathBuf) {
-    let mut file = OpenOptions::new()
-        .write(true)
-        .open(path)
-        .expect("Could not create config file");
-    file.write(toml::to_string(&config).unwrap().as_bytes())
-        .expect("Could not write to file!");
+    write(path, toml::to_string(&config).unwrap()).expect("Could not write to global config");
 }
