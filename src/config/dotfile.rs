@@ -1,16 +1,19 @@
-use std::fs::{write, create_dir_all, read_to_string};
-use std::io::Write;
+use std::fs::{create_dir_all, read_to_string};
 use std::path::PathBuf;
 
 use toml::from_str;
 
 use serde::{Deserialize, Serialize};
 
+use crate::config::Writable;
+
 #[derive(Serialize, Deserialize)]
 pub struct Config {
     pub helper: Option<String>,
     pub path: Option<String>,
 }
+
+impl Writable for Config {}
 
 pub fn load_config(path: &PathBuf) -> Config {
     let configs = match read_to_string(path) {
@@ -22,7 +25,6 @@ pub fn load_config(path: &PathBuf) -> Config {
 }
 
 fn init_config(path: &PathBuf) -> String {
-
     let global_config_dir = path.parent().unwrap();
 
     if !global_config_dir.exists() {
@@ -34,26 +36,8 @@ fn init_config(path: &PathBuf) -> String {
         path: None,
     };
 
-    write_config(config, path);
+    config.write_to_file(path);
 
     // Unwrapping should be safe here.
     read_to_string(path).unwrap()
-}
-
-pub fn update_config(config: Config, path: &PathBuf) {
-    let mut new_config = load_config(path);
-
-    if config.helper.is_some() {
-        new_config.helper = config.helper;
-    }
-
-    if config.path.is_some() {
-        new_config.path = config.path;
-    }
-
-    write_config(new_config, path);
-}
-
-pub fn write_config(config: Config, path: &PathBuf) {
-    write(path, toml::to_string(&config).unwrap()).expect("Could not write to global config");
 }

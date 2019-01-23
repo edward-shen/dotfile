@@ -3,7 +3,8 @@ use std::path::PathBuf;
 
 use crate::config::dotfile::load_config as load_global_config;
 use crate::config::dotfile::Config as GlobalConfig;
-use crate::config::local::{load_config as load_local_config, update_config, Group};
+use crate::config::local::{load_config as load_local_config, Group};
+use crate::config::Writable;
 
 pub fn handler(
     (global_config_path, _, args): (&PathBuf, &GlobalConfig, &clap::ArgMatches),
@@ -50,7 +51,7 @@ fn create_groups(local_config_path: &PathBuf, args: clap::Values) {
             .insert(String::from(group_name), Group { packages: vec![] });
     }
 
-    update_config(local_config, local_config_path);
+    local_config.write_to_file(local_config_path);
 }
 
 fn delete_groups(local_config_path: &PathBuf, args: clap::Values) {
@@ -61,7 +62,7 @@ fn delete_groups(local_config_path: &PathBuf, args: clap::Values) {
         local_config.groups.remove(&String::from(group_name));
     }
 
-    update_config(local_config, local_config_path);
+    local_config.write_to_file(local_config_path);
 }
 
 fn rename_group(local_config_path: &PathBuf, args: clap::Values) {
@@ -74,5 +75,5 @@ fn rename_group(local_config_path: &PathBuf, args: clap::Values) {
     let group_to_move = local_config.groups.remove(&old_group_name).unwrap();
     local_config.groups.insert(new_group_name, group_to_move);
 
-    update_config(local_config, local_config_path);
+    local_config.write_to_file(local_config_path);
 }

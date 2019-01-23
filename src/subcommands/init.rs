@@ -6,8 +6,9 @@ use std::process::{Command, Stdio};
 
 use dirs::home_dir;
 
-use crate::config::dotfile::{update_config as update_global_config, Config as GlobalConfig};
+use crate::config::dotfile::Config as GlobalConfig;
 use crate::config::local::init_config;
+use crate::config::Writable;
 
 const COMMON_DIR: &'static str = "common";
 
@@ -59,7 +60,7 @@ fn init_repository(local_config_path: &PathBuf, global_config_path: &PathBuf) ->
         path: Some(String::from(local_config_path.to_str().unwrap())),
     };
 
-    update_global_config(config_to_update, global_config_path);
+    config_to_update.write_to_file(global_config_path);
     Ok(())
 }
 
