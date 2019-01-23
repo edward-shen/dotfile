@@ -81,7 +81,7 @@ subcommands:
             - no_config:
                 short: "n"
                 long: no-config
-                help: Do not attempt to stow the config directory
+                help: Add the package but do not attempt to stow the config directory
                 conflicts_with: configs
             - PKGS:
                 short: p
