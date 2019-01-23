@@ -4,6 +4,15 @@ version = "0.1.0"
 authors = ["Edward Shen <code@eddie.sh>"]
 edition = "2018"
 
+description = "Dotfile manager and package installer"
+repository = "https://github.com/edward-shen/dotfile"
+readme = "readme.md"
+
+license = "GPL3"
+keywords = ["dotfile", "manager", "package", "arch", "linux"]
+categories = ["command-line-utilities", "config", "filesystem"]
+
+
 [dependencies]
 clap = {version = "2.32", features = ["yaml"]}
 dirs = "1.0.4"
