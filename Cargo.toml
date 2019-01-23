@@ -9,4 +9,3 @@ clap = {version = "2.32", features = ["yaml"]}
 dirs = "1.0.4"
 toml = "0.4.2"
 serde = {version = "1.0", features = ["derive"]}
-lazy_static = "1.2.0"
