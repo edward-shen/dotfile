@@ -5,77 +5,77 @@ use std::process::Command;
 use crate::config::dotfile::{load_config as load_global_config, Config as GlobalConfig};
 
 pub fn handler(
-  (global_config_path, _, args): (&PathBuf, &GlobalConfig, &clap::ArgMatches),
+    (global_config_path, _, args): (&PathBuf, &GlobalConfig, &clap::ArgMatches),
 ) -> Result<(), Error> {
-  println!("{:?}", args);
+    println!("{:?}", args);
 
-  let run_scripts = !args.is_present("no_scripts");
-  let global_config = load_global_config(global_config_path);
-  let local_config_path = global_config
-    .path
-    .and_then(|path| Some(PathBuf::from(path)))
-    .expect("Global config does not have custom dotfile path");
-  let helper = global_config.helper;
+    let run_scripts = !args.is_present("no_scripts");
+    let global_config = load_global_config(global_config_path);
+    let local_config_path = global_config
+        .path
+        .and_then(|path| Some(PathBuf::from(path)))
+        .expect("Global config does not have custom dotfile path");
+    let helper = global_config.helper;
 
-  update_arch();
+    update_arch();
 
-  if !args.is_present("bool") {
-    install_group(&local_config_path, &helper, vec!["common"], run_scripts);
-  }
+    if !args.is_present("bool") {
+        install_group(&local_config_path, &helper, vec!["common"], run_scripts);
+    }
 
-  if args.is_present("group") {
-    let group_names: Vec<_> = args.values_of("group").unwrap().collect();
-    install_group(&local_config_path, &helper, group_names, run_scripts);
-  }
+    if args.is_present("group") {
+        let group_names: Vec<_> = args.values_of("group").unwrap().collect();
+        install_group(&local_config_path, &helper, group_names, run_scripts);
+    }
 
-  if args.is_present("GROUPS") {
-    let group_names: Vec<_> = args.values_of("groups").unwrap().collect();
-    install_group(&local_config_path, &helper, group_names, run_scripts);
-  }
+    if args.is_present("GROUPS") {
+        let group_names: Vec<_> = args.values_of("groups").unwrap().collect();
+        install_group(&local_config_path, &helper, group_names, run_scripts);
+    }
 
-  Ok(())
+    Ok(())
 }
 
 fn update_arch() {
-  Command::new("sudo")
-    .args(&["pacman", "-Syyu", "--noconfirm", "--needed"])
-    .output()
-    .expect("Could not execute sudo. Is it installed?");
+    Command::new("sudo")
+        .args(&["pacman", "-Syyu", "--noconfirm", "--needed"])
+        .output()
+        .expect("Could not execute sudo. Is it installed?");
 }
 
 fn install_group(
-  dotfile_dir_path: &PathBuf,
-  helper: &Option<String>,
-  group_names: Vec<&str>,
-  run_scripts: bool,
+    dotfile_dir_path: &PathBuf,
+    helper: &Option<String>,
+    group_names: Vec<&str>,
+    run_scripts: bool,
 ) {
-  if run_scripts {
-    run_script(&dotfile_dir_path.join("pre.sh"));
-  }
-
-  let mut installer = match helper {
-    Some(aur_helper) => Command::new(aur_helper),
-    None => {
-      let mut default_helper = Command::new("sudo");
-      default_helper.args(&["pacman", "-S"]);
-      default_helper
+    if run_scripts {
+        run_script(&dotfile_dir_path.join("pre.sh"));
     }
-  };
 
-  installer
-    .args(&["--noconfirm", "--needed"])
-    .args(group_names)
-    .output()
-    .expect("Specified helper does not exist!");
+    let mut installer = match helper {
+        Some(aur_helper) => Command::new(aur_helper),
+        None => {
+            let mut default_helper = Command::new("sudo");
+            default_helper.args(&["pacman", "-S"]);
+            default_helper
+        }
+    };
 
-  if run_scripts {
-    run_script(&dotfile_dir_path.join("post.sh"));
-  }
+    installer
+        .args(&["--noconfirm", "--needed"])
+        .args(group_names)
+        .output()
+        .expect("Specified helper does not exist!");
+
+    if run_scripts {
+        run_script(&dotfile_dir_path.join("post.sh"));
+    }
 }
 
 fn run_script(path: &PathBuf) {
-  Command::new("sh")
-    .arg(path)
-    .output()
-    .expect("failed to run sh!");
+    Command::new("sh")
+        .arg(path)
+        .output()
+        .expect("failed to run sh!");
 }
