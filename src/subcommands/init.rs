@@ -6,7 +6,7 @@ use std::process::{Command, Stdio};
 
 use dirs::home_dir;
 
-use crate::config::dotfile::Config as GlobalConfig;
+use crate::config::global::Config as GlobalConfig;
 use crate::config::local::init_config;
 use crate::config::Writable;
 

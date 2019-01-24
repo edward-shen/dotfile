@@ -27,7 +27,7 @@ fn main() -> Result<(), Error> {
         None => config_dir().unwrap().join("./dotfile/config.toml"),
     };
 
-    let global_config = config::dotfile::load_config(&global_config_path);
+    let global_config = config::global::load_config(&global_config_path);
 
     let params = (&global_config_path, &global_config, &matches);
 

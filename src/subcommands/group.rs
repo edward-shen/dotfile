@@ -1,8 +1,8 @@
 use std::io::{Error, ErrorKind};
 use std::path::PathBuf;
 
-use crate::config::dotfile::load_config as load_global_config;
-use crate::config::dotfile::Config as GlobalConfig;
+use crate::config::global::load_config as load_global_config;
+use crate::config::global::Config as GlobalConfig;
 use crate::config::local::{load_config as load_local_config, Group};
 use crate::config::Writable;
 

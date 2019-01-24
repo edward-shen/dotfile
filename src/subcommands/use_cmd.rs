@@ -1,7 +1,7 @@
 use std::io::Error;
 use std::path::PathBuf;
 
-use crate::config::dotfile::Config;
+use crate::config::global::Config;
 use crate::config::Writable;
 
 pub fn handler(

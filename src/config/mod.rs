@@ -3,7 +3,7 @@ use std::path::PathBuf;
 
 use serde::Serialize;
 
-pub mod dotfile;
+pub mod global;
 pub mod local;
 
 pub trait Writable {
