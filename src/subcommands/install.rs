@@ -94,6 +94,9 @@ fn install_group(
             .output()
             .expect("Specified helper does not exist!");
     }
+
+    // TODO: Stow dotfiles
+
     if run_scripts {
         run_script(&dotfile_dir_path.join("post.sh"));
     }
