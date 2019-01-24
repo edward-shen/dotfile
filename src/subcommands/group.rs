@@ -1,30 +1,24 @@
 use std::io::{Error, ErrorKind};
 use std::path::PathBuf;
 
-use crate::config::global::load_config as load_global_config;
-use crate::config::global::GlobalConfig;
 use crate::config::local::{load_config as load_local_config, Group};
 use crate::config::Writable;
+use crate::Context;
 
-pub fn handler(
-    (global_config_path, _, args): (&PathBuf, &GlobalConfig, &clap::ArgMatches),
-) -> Result<(), Error> {
-    let args = args
+pub fn handler(context: Context) -> Result<(), Error> {
+    let args = context
+        .matches
         .subcommand_matches("group")
         .expect("clap misparsed subcommand!");
 
-    let local_config_path = load_global_config(global_config_path)
-        .path
-        .and_then(|path| Some(PathBuf::from(path)));
-
-    if local_config_path.is_none() {
+    if context.local_config_path.is_none() {
         return Err(Error::new(
             ErrorKind::NotFound,
             "Global config does not have path set, was init called?",
         ));
     }
 
-    let local_config_path = local_config_path.unwrap();
+    let local_config_path = context.local_config_path.unwrap();
 
     if args.is_present("rename") {
         rename_group(&local_config_path, args.values_of("rename").unwrap());

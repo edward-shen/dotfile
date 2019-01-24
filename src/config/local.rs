@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::config::Writable;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct LocalConfig {
     version: String,
     pub groups: HashMap<String, Group>,
@@ -18,7 +18,7 @@ pub struct LocalConfig {
 
 impl Writable for LocalConfig {}
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Group {
     pub packages: Vec<String>,
 }

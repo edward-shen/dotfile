@@ -1,12 +1,8 @@
 use std::io::Error;
-use std::path::PathBuf;
 
-use crate::config::global::GlobalConfig;
+use crate::Context;
 
-pub fn handler(
-    (global_config_path, _, args): (&PathBuf, &GlobalConfig, &clap::ArgMatches),
-) -> Result<(), Error> {
-    dbg!(global_config_path);
-    dbg!(args);
+pub fn handler(context: Context) -> Result<(), Error> {
+    dbg!(context);
     unimplemented!("Add command is complicated, so this will be done later")
 }

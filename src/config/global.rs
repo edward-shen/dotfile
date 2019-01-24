@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::config::Writable;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct GlobalConfig {
     pub helper: Option<String>,
     pub path: Option<String>,

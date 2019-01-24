@@ -1,41 +1,62 @@
 use std::io::Error;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::{Duration, Instant};
 
 use tokio::prelude::*;
 use tokio::timer::Interval;
 
-use crate::config::global::{load_config as load_global_config, GlobalConfig};
-use crate::config::local::load_config as load_local_config;
+use crate::config::local::LocalConfig;
+use crate::Context;
 
-pub fn handler(
-    (global_config_path, _, args): (&PathBuf, &GlobalConfig, &clap::ArgMatches),
-) -> Result<(), Error> {
-    let run_scripts = !args.is_present("no_scripts");
-    let global_config = load_global_config(global_config_path);
-    let local_config_path = global_config
-        .path
-        .and_then(|path| Some(PathBuf::from(path)))
-        .expect("Global config does not have custom dotfile path");
-    let helper = global_config.helper;
+pub fn handler(context: Context) -> Result<(), Error> {
+    let run_scripts = !context.matches.is_present("no_scripts");
 
     start_sudo_timer();
 
     update_arch();
 
-    if !args.is_present("bool") {
-        install_group(&local_config_path, &helper, vec!["common"], run_scripts);
+    let dotfile_dir_path = context
+        .local_config_path
+        .clone()
+        .expect("dotfile location was not specified in global config");
+    let dotfile_dir_path = dotfile_dir_path
+        .parent()
+        .expect("Could not get access to dotfile directory");
+
+    let local_config = context.local_config.expect("Could not load local config");
+    let helper = context.global_config.helper;
+
+    if !context.matches.is_present("bool") {
+        install_group(
+            dotfile_dir_path,
+            &local_config,
+            &helper,
+            vec!["common"],
+            run_scripts,
+        );
     }
 
-    if args.is_present("group") {
-        let group_names: Vec<_> = args.values_of("group").unwrap().collect();
-        install_group(&local_config_path, &helper, group_names, run_scripts);
+    if context.matches.is_present("group") {
+        let group_names: Vec<_> = context.matches.values_of("group").unwrap().collect();
+        install_group(
+            dotfile_dir_path,
+            &local_config,
+            &helper,
+            group_names,
+            run_scripts,
+        );
     }
 
-    if args.is_present("GROUPS") {
-        let group_names: Vec<_> = args.values_of("groups").unwrap().collect();
-        install_group(&local_config_path, &helper, group_names, run_scripts);
+    if context.matches.is_present("GROUPS") {
+        let group_names: Vec<_> = context.matches.values_of("groups").unwrap().collect();
+        install_group(
+            dotfile_dir_path,
+            &local_config,
+            &helper,
+            group_names,
+            run_scripts,
+        );
     }
 
     Ok(())
@@ -63,7 +84,8 @@ fn update_arch() {
 }
 
 fn install_group(
-    dotfile_dir_path: &PathBuf,
+    dotfile_dir_path: &Path,
+    local_config: &LocalConfig,
     helper: &Option<String>,
     group_names: Vec<&str>,
     run_scripts: bool,
@@ -80,8 +102,6 @@ fn install_group(
             default_helper
         }
     };
-
-    let local_config = load_local_config(dotfile_dir_path);
 
     for group_name in group_names {
         let config_group = local_config

@@ -9,13 +9,13 @@ use dirs::home_dir;
 use crate::config::global::GlobalConfig;
 use crate::config::local::init_config;
 use crate::config::Writable;
+use crate::Context;
 
 const COMMON_DIR: &'static str = "common";
 
-pub fn handler(
-    (global_config_path, _, args): (&PathBuf, &GlobalConfig, &clap::ArgMatches),
-) -> Result<(), Error> {
-    let args = args
+pub fn handler(context: Context) -> Result<(), Error> {
+    let args = context
+        .matches
         .subcommand_matches("init")
         .expect("Clap-rs gave us incorrect subcommand!");
     let home_dir = home_dir().expect("Could not locate home directory!");
@@ -27,7 +27,7 @@ pub fn handler(
         .join(path.replace("~", home_dir));
 
     if can_init(&local_path)? {
-        init_repository(&local_path, global_config_path)
+        init_repository(&local_path, &context.global_config_path)
     } else {
         if args.is_present("stow_dir") {
             adopt_repository(&local_path, &args)
