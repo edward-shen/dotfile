@@ -6,7 +6,7 @@ use std::time::{Duration, Instant};
 use tokio::prelude::*;
 use tokio::timer::Interval;
 
-use crate::config::global::{load_config as load_global_config, Config as GlobalConfig};
+use crate::config::global::{load_config as load_global_config, GlobalConfig};
 use crate::config::local::load_config as load_local_config;
 
 pub fn handler(

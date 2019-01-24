@@ -11,19 +11,19 @@ use serde::{Deserialize, Serialize};
 use crate::config::Writable;
 
 #[derive(Serialize, Deserialize)]
-pub struct Config {
+pub struct LocalConfig {
     version: String,
     pub groups: HashMap<String, Group>,
 }
 
-impl Writable for Config {}
+impl Writable for LocalConfig {}
 
 #[derive(Serialize, Deserialize)]
 pub struct Group {
     pub packages: Vec<String>,
 }
 
-pub fn load_config(path: &PathBuf) -> Config {
+pub fn load_config(path: &PathBuf) -> LocalConfig {
     from_str(&read_to_string(path).expect("Dotfile config not found!"))
         .expect("Malformed config file!")
 }
@@ -36,7 +36,7 @@ pub fn init_config(path: &PathBuf) -> Result<(), Error> {
             packages: Vec::new(),
         },
     );
-    let config = Config {
+    let config = LocalConfig {
         version: crate_version!().to_string(),
         groups,
     };

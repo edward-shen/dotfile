@@ -8,14 +8,14 @@ use serde::{Deserialize, Serialize};
 use crate::config::Writable;
 
 #[derive(Serialize, Deserialize)]
-pub struct Config {
+pub struct GlobalConfig {
     pub helper: Option<String>,
     pub path: Option<String>,
 }
 
-impl Writable for Config {}
+impl Writable for GlobalConfig {}
 
-pub fn load_config(path: &PathBuf) -> Config {
+pub fn load_config(path: &PathBuf) -> GlobalConfig {
     let configs = match read_to_string(path) {
         Ok(config) => config,
         _ => init_config(&path),
@@ -31,7 +31,7 @@ fn init_config(path: &PathBuf) -> String {
         create_dir_all(global_config_dir).expect("Cannot create config directory!");
     }
 
-    let config = Config {
+    let config = GlobalConfig {
         helper: None,
         path: None,
     };
