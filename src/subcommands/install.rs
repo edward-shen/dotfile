@@ -7,6 +7,7 @@ use tokio::prelude::*;
 use tokio::timer::Interval;
 
 use crate::config::dotfile::{load_config as load_global_config, Config as GlobalConfig};
+use crate::config::local::load_config as load_local_config;
 
 pub fn handler(
     (global_config_path, _, args): (&PathBuf, &GlobalConfig, &clap::ArgMatches),
@@ -80,12 +81,19 @@ fn install_group(
         }
     };
 
-    installer
-        .args(&["--noconfirm", "--needed"])
-        .args(group_names)
-        .output()
-        .expect("Specified helper does not exist!");
+    let local_config = load_local_config(dotfile_dir_path);
 
+    for group_name in group_names {
+        let config_group = local_config
+            .groups
+            .get(group_name)
+            .expect("Group was not found!");
+        installer
+            .args(&["--noconfirm", "--needed"])
+            .args(&config_group.packages)
+            .output()
+            .expect("Specified helper does not exist!");
+    }
     if run_scripts {
         run_script(&dotfile_dir_path.join("post.sh"));
     }
