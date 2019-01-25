@@ -26,8 +26,8 @@ pub struct Context<'a> {
     matches: ArgMatches<'a>,
 }
 
-/// Parses top-level CLI arguments, loads the dotfile config, and then passes
-/// the loaded configs into the subcommand handler
+/// Parses top-level CLI arguments, generates the context of the app, and passes
+/// everything to a subcommand handler.
 fn main() -> Result<(), Error> {
     let yaml = load_yaml!("cli.yaml");
     let matches = App::from_yaml(&yaml)
@@ -48,7 +48,7 @@ fn main() -> Result<(), Error> {
 
     let local_config = (local_config_path)
         .clone()
-        .and_then(|path| Some(load_local_config(&path)));
+        .and_then(|path| Some(load_local_config(&path.join("./dotfile.toml"))));
 
     let context = Context {
         global_config_path: global_config_path,
@@ -57,6 +57,8 @@ fn main() -> Result<(), Error> {
         local_config: local_config,
         matches: matches.clone(),
     };
+
+    dbg!(&context);
 
     match matches.subcommand_name().unwrap_or_default() {
         "init" => subcommands::init::handler(context),

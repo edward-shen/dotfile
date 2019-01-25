@@ -3,13 +3,14 @@ use std::path::PathBuf;
 
 use crate::config::local::{load_config as load_local_config, Group};
 use crate::config::Writable;
+use crate::subcommands::get_arg_err_msg;
 use crate::Context;
 
 pub fn handler(context: Context) -> Result<(), Error> {
     let args = context
         .matches
         .subcommand_matches("group")
-        .expect("clap misparsed subcommand!");
+        .expect(&get_arg_err_msg("group"));
 
     if context.local_config_path.is_none() {
         return Err(Error::new(

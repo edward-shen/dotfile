@@ -9,6 +9,7 @@ use dirs::home_dir;
 use crate::config::global::GlobalConfig;
 use crate::config::local::init_config;
 use crate::config::Writable;
+use crate::subcommands::get_arg_err_msg;
 use crate::Context;
 
 const COMMON_DIR: &'static str = "common";
@@ -17,7 +18,8 @@ pub fn handler(context: Context) -> Result<(), Error> {
     let args = context
         .matches
         .subcommand_matches("init")
-        .expect("Clap-rs gave us incorrect subcommand!");
+        .expect(&get_arg_err_msg("init"));
+
     let home_dir = home_dir().expect("Could not locate home directory!");
     let home_dir = home_dir.to_str().expect("Could not stringify home path!");
 

@@ -7,9 +7,14 @@ use tokio::prelude::*;
 use tokio::timer::Interval;
 
 use crate::config::local::LocalConfig;
+use crate::subcommands::get_arg_err_msg;
 use crate::Context;
 
 pub fn handler(context: Context) -> Result<(), Error> {
+    let args = context
+        .matches
+        .subcommand_matches("install")
+        .expect(&get_arg_err_msg("install"));
     let run_scripts = !context.matches.is_present("no_scripts");
 
     start_sudo_timer();
@@ -25,9 +30,9 @@ pub fn handler(context: Context) -> Result<(), Error> {
         .expect("Could not get access to dotfile directory");
 
     let local_config = context.local_config.expect("Could not load local config");
-    let helper = context.global_config.helper;
+    let helper = &context.global_config.helper;
 
-    if !context.matches.is_present("bool") {
+    if !args.is_present("bool") {
         install_group(
             dotfile_dir_path,
             &local_config,
@@ -37,8 +42,8 @@ pub fn handler(context: Context) -> Result<(), Error> {
         );
     }
 
-    if context.matches.is_present("group") {
-        let group_names: Vec<_> = context.matches.values_of("group").unwrap().collect();
+    if args.is_present("group") {
+        let group_names: Vec<_> = args.values_of("group").unwrap().collect();
         install_group(
             dotfile_dir_path,
             &local_config,
@@ -48,8 +53,8 @@ pub fn handler(context: Context) -> Result<(), Error> {
         );
     }
 
-    if context.matches.is_present("GROUPS") {
-        let group_names: Vec<_> = context.matches.values_of("groups").unwrap().collect();
+    if args.is_present("GROUPS") {
+        let group_names: Vec<_> = args.values_of("groups").unwrap().collect();
         install_group(
             dotfile_dir_path,
             &local_config,
