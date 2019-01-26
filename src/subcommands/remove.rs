@@ -3,7 +3,7 @@ use std::io::Error;
 use std::path::PathBuf;
 use std::process::Command;
 
-use dir::home_dir;
+use dirs::home_dir;
 
 use crate::config::Writable;
 use crate::subcommands::get_arg_err_msg;
