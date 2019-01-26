@@ -58,11 +58,6 @@ subcommands:
         settings:
             - ArgRequiredElseHelp
         args:
-            - path:
-                short: P
-                long: path
-                help: Specify a path to use that's different from the set one.
-                takes_value: true
             - groups:
                 short: g
                 long: group
@@ -115,6 +110,7 @@ subcommands:
                 help: Specify what group(s) to remove the specified packages or configs from.
                 takes_value: true
                 min_values: 1
+                required: true
                 requires: needConfigOrPkgs
             - config:
                 short: c
