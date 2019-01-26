@@ -63,6 +63,7 @@ subcommands:
                 long: group
                 help: Specify what group(s) to add the specified packages to.
                 takes_value: true
+                required: true
                 min_values: 1
             - configs:
                 short: c

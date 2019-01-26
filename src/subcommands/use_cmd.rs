@@ -2,9 +2,8 @@ use std::io::Error;
 
 use crate::config::global::GlobalConfig;
 use crate::config::Writable;
-use crate::Context;
-
 use crate::subcommands::get_arg_err_msg;
+use crate::Context;
 
 pub fn handler(context: Context) -> Result<(), Error> {
     let args = context
