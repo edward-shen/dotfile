@@ -197,9 +197,12 @@ fn stow_move(src: &DirEntry, dest: &PathBuf) {
     let dir_name = src.file_name();
     let dir_name = dir_name.to_str().expect("");
 
+    let home = home_dir().unwrap();
+    let home = home.to_str().unwrap();
+
     Command::new("stow")
         .current_dir(dest.parent().unwrap())
-        .args(&["-D", dir_name])
+        .args(&["-D", dir_name, "-t", home])
         .output()
         .expect("Failed to execute stow! Is it installed?");
 
@@ -208,7 +211,7 @@ fn stow_move(src: &DirEntry, dest: &PathBuf) {
 
     Command::new("stow")
         .current_dir(dest)
-        .args(&["-t", home_dir().unwrap().to_str().unwrap(), "-S", dir_name])
+        .args(&["-t", home, "-S", dir_name])
         .output()
         .expect("Could not execute stow!");
 }

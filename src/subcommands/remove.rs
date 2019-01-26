@@ -1,6 +1,9 @@
 use std::fs::read_dir;
 use std::io::Error;
 use std::path::PathBuf;
+use std::process::Command;
+
+use dir::home_dir;
 
 use crate::config::Writable;
 use crate::subcommands::get_arg_err_msg;
@@ -62,7 +65,15 @@ fn uninstall_configs(
                         .join(group_name)
                         .join(config_name);
                     match read_dir(config_path) {
-                        Ok(_) => unimplemented!("Removing groups is unimplemented!"),
+                        Ok(_) => {
+                            let home = home_dir().unwrap();
+                            let home = home.to_str().unwrap();
+                            Command::new("stow")
+                                .current_dir(local_config_path.join(group_name))
+                                .args(&["-D", config_name, "-t", home])
+                                .output()
+                                .expect("Failed to execute stow! Is it installed?");
+                        }
                         Err(_) => println!(
                             "warning: config {} not found for group {}",
                             config_name, group_name
