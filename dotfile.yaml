@@ -1,0 +1,130 @@
+
+default_sets:
+  - full
+
+init:
+  before:
+    # Standard user dirs
+    - mkdir -p "$HOME/Downloads" "$HOME/Music" "$HOME/Pictures" "$HOME/Videos" "$HOME/.config"
+    - mkdir -p "$HOME/Documents/repos" "$HOME/Documents/school"
+    # Some soft links so I can just cd from my home directory
+    - ln -s "$HOME/Documents/repos" "$HOME/repos" || true
+    - ln -s "$HOME/Documents/school" "$HOME/school" || true
+    - ln -s "$HOME/repos/dotfiles" "$HOME/dotfiles" || true
+    - mkdir -p "$HOME/.config" "$HOME/.gnupg"
+    - chmod 700 "$HOME/.gnupg"
+
+  after:
+    - sudo sysctl kernel.sysrq=1
+    - sudo cp unstowables/systemd/logind.conf /etc/systemd/
+    - sudo cp unstowables/systemd/system/* /etc/systemd/system/
+
+sets:
+  full:
+    groups:
+      - tex
+      - tools
+      - proprietary
+      - mail
+      - py
+      - core
+      - audio
+      - net
+      - shell
+      - fonts
+      - xorg
+      - desktop
+      - rice
+      - rust
+
+  desktop:
+    sets: ["full"]
+    groups: ["desktop", "graphics-amd", "zfs"]
+
+  laptop:
+    sets: ["full"]
+    groups: ["power", "gestures"]
+
+groups:
+  core: >
+    linux-zen linux-zen-headers acpi ntp reflector-timer man-db man-pages less
+    diffutils dkms
+  audio: >
+    pulseaudio pulseaudio-alsa alsa-utils pavucontrol pulseaudio-bluetooth
+  net: networkmanager network-manager-applet dhcpcd
+  tools: >
+    nmap neofetch htop tree stow p7zip xclip openssh neovim bat wget ripgrep
+    strace gparted git gpm
+  tex: texlive-most
+  shell: >
+    zsh oh-my-zsh-git zsh-syntax-highlighting zsh-theme-powerlevel10k-git
+    pkgfile
+  fun: cowsay fortune-mod wtf thefuck
+  fonts: >
+    ttf-ms-fonts ttf-opensans ttf-roboto noto-fonts powerline-fonts-git
+    ttf-font-awesome-4 ttf-fira-code ttf-dejavu noto-fonts-emoji ttf-mplus
+    noto-fonts-cjk
+  xorg: >
+    xorg-server xorg-xinit xorg-xkill xorg-xinput xorg-xmodmap xterm
+    xss-lock-git xorg-xset xbindkeys xdotool xdg-utils perl-file-mimeinfo
+  desktop: >
+    i3-gaps-next-git libreoffice dunst rofi maim mpv feh zathura zathura-pdf-mupdf
+    mpv-mpris alacritty synergy code firefox qbittorrent arandr gimp thunderbird
+    protonmail-bridge
+  messaging: riot-desktop signal-desktop
+  mail: protonmail-bridge thunderbird
+  desktop-opt: ungoogled-chromium
+  proprietary: discord spotify unrar
+  rice: picom polybar playerctl betterlockscreen capitaine-cursors
+
+  # Languages
+  js: nodejs yarn nvm
+  py: python
+  rust: rust
+  java: jdk-openjdk
+  java-8: jdk8-openjdk
+
+  # Laptop groups
+  power: powertop light
+  gestures: libinput-gestures
+
+  # Desktop groups
+  graphics-amd: libva-mesa-driver vulkan-radeon xf86-video-amdgpu mesa
+  zfs: zfs-dkms
+
+config:
+  betterlockscreen:
+    after:
+      - betterlockscreen -u ~/.lockbg.png -b 0
+  networkmanager:
+    after:
+      - sudo systemctl enable NetworkManager --now
+      - sudo systemctl enable NetworkManager-dispatcher --now
+  ntpd:
+    after:
+      - sudo systemctl enable ntpd --now
+  gpm:
+    after:
+      - sudo systemctl enable gpm --now
+  powertop:
+    after:
+      - sudo systemctl enable powertop --now
+  libinput-gesutres:
+    after:
+      - sudo gpasswd -a $USER input
+      - libinput-gestures-setup autostart
+  mpv-mpris:
+    after:
+      - mkdir -p "$HOME/.config/mpv/scripts"
+      - ln -s /usr/lib/mpv/mpris.so "$HOME/.config/mpv/scripts/mpris.so" || true
+  openssh:
+    after:
+      -  echo "n\n" | ssh-keygen -t ed25519 -N '' -f "$HOME/.ssh/code@eddie.sh"
+  zsh:
+    after:
+      - sudo chsh "$USER" -s "$(command -v zsh)"
+      - sudo chsh root -s "$(command -v  zsh)"
+  reflector-timer:
+    after:
+      - sudo cp unstowables/reflector-timer/reflector.conf /usr/share/reflector-timer/reflector.conf
+      - sudo systemctl enable reflector.timer --now

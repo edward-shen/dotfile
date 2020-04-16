@@ -14,8 +14,9 @@ categories = ["command-line-utilities", "config", "filesystem"]
 
 
 [dependencies]
-clap = {version = "2.32", features = ["yaml"]}
+cursive = "0.14.0"
+cursive_tree_view = "0.6.0"
 dirs = "1.0.4"
-toml = "0.4.2"
+serde_yaml = "0.8"
 serde = {version = "1.0", features = ["derive"]}
-tokio = "0.1.14"
+clap = { git = "https://github.com/clap-rs/clap/" }
